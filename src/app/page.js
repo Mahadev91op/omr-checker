@@ -1,39 +1,55 @@
-import Link from 'next/link';
+import connectToDatabase from '@/lib/mongodb';
+import Exam from '@/models/Exam';
 
-export default function Home() {
+import Header from '@/components/Header';
+import QuickActions from '@/components/QuickActions';
+import RecentExams from '@/components/RecentExams';
+import BottomNav from '@/components/BottomNav';
+
+export const dynamic = 'force-dynamic'; 
+
+export default async function Home() {
+  let safeExams = [];
+
+  try {
+    // 1. Database se judna
+    await connectToDatabase();
+    
+    // 2. Data lana
+    const rawExams = await Exam.find({}).sort({ createdAt: -1 }).limit(15).lean();
+
+    // ERROR 1 FIX: Next.js ko plain object chahiye. 
+    // Hum MongoDB ke _id aur Date ko string me convert kar rahe hain.
+    safeExams = rawExams.map((exam) => ({
+      ...exam,
+      _id: exam._id.toString(), // _id Object se String ban gaya
+      date: exam.date ? new Date(exam.date).toISOString() : null,
+      createdAt: exam.createdAt ? new Date(exam.createdAt).toISOString() : null,
+      updatedAt: exam.updatedAt ? new Date(exam.updatedAt).toISOString() : null,
+      answerKey: exam.answerKey ? exam.answerKey.map(k => ({
+        questionNumber: k.questionNumber,
+        correctOption: k.correctOption,
+        _id: k._id ? k._id.toString() : null
+      })) : []
+    }));
+
+  } catch (error) {
+    console.error("Home page data load hone me error aayi:", error.message);
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center py-12 px-4 font-sans">
-      
-      {/* Header */}
-      <header className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold text-slate-800 mb-2">Smart OMR Checker</h1>
-        <p className="text-slate-500 text-lg">Teachers ke liye aasan aur tez paper checking system</p>
-      </header>
-
-      {/* Main Actions (Buttons) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex justify-center pb-20">
+      <div className="w-full max-w-md bg-white min-h-screen shadow-sm relative">
         
-        {/* Create Exam Card */}
-        <Link href="/create-exam" className="group">
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-blue-400 transition-all duration-300 flex flex-col items-center text-center cursor-pointer h-full">
-            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
-              📝
-            </div>
-            <h2 className="text-2xl font-bold text-slate-700 mb-2">Naya Exam Banayein</h2>
-            <p className="text-slate-500">Class select karein aur nayi Answer Key system me save karein.</p>
-          </div>
-        </Link>
+        <Header />
 
-        {/* Open Scanner Card */}
-        <Link href="/scanner" className="group">
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg hover:green-border-400 transition-all duration-300 flex flex-col items-center text-center cursor-pointer h-full">
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
-              📷
-            </div>
-            <h2 className="text-2xl font-bold text-slate-700 mb-2">Live Scanner Kholein</h2>
-            <p className="text-slate-500">Camera open karein aur students ki OMR sheets ko turant check karein.</p>
-          </div>
-        </Link>
+        <main className="px-5 py-6">
+          <QuickActions />
+          {/* Ab hum plain data bhej rahe hain, toh error nahi aayega */}
+          <RecentExams exams={safeExams} />
+        </main>
+
+        <BottomNav />
 
       </div>
     </div>

@@ -18,11 +18,17 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html
-      lang="en"
+    <html 
+      lang="en" 
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning /* <-- YEH LINE ADD KAREIN */
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body 
+        className="min-h-full flex flex-col"
+        suppressHydrationWarning /* <-- YEH LINE ADD KAREIN */
+      >
+        {children}
+      </body>
     </html>
   );
 }
