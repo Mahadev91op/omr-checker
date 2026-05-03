@@ -106,7 +106,7 @@ export default function LiveScanner() {
         for (let i = 0; i < contours.size(); ++i) {
           let cnt = contours.get(i);
           let area = window.cv.contourArea(cnt);
-          if (area > 50000) { // minimum area for document
+          if (area > 20000) { // Reduced from 50000 for easier detection
             let peri = window.cv.arcLength(cnt, true);
             let approx = new window.cv.Mat();
             window.cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
@@ -149,6 +149,7 @@ export default function LiveScanner() {
 
   // Mock Grading logic for demonstration until exact template is calibrated
   const simulateGrading = (exam) => {
+    setIsProcessing(true); // Stop auto-processing once triggered
     const totalQuestions = exam.answerKey.length;
     let score = 0;
     const responses = exam.answerKey.map(k => {
@@ -169,6 +170,14 @@ export default function LiveScanner() {
       percentage: ((score / totalQuestions) * 100).toFixed(1),
       responses
     });
+  };
+
+  const handleManualScan = () => {
+    if (!selectedExam) return;
+    setScanStatus("Manual Scan Triggered...");
+    setTimeout(() => {
+      simulateGrading(selectedExam);
+    }, 500);
   };
 
   useEffect(() => {
@@ -263,6 +272,14 @@ export default function LiveScanner() {
                   <div className="absolute bottom-6 left-6 w-8 h-8 border-b-2 border-l-2 border-blue-500"></div>
                   <div className="absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 border-blue-500"></div>
                 </div>
+                
+                <button 
+                  onClick={handleManualScan} 
+                  className="mt-6 px-6 py-3 w-full bg-slate-800 border border-slate-700 text-white font-semibold rounded-xl hover:bg-slate-700 active:bg-slate-600 transition-colors flex justify-center items-center gap-2"
+                >
+                  <Camera size={18} className="text-blue-400" />
+                  Force Scan / Grade Now
+                </button>
               </div>
             ) : (
               <div className="w-full animate-in zoom-in-95 duration-300 flex-1 flex flex-col justify-center">
