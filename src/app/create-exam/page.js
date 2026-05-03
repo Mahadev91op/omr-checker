@@ -62,45 +62,49 @@ export default function CreateExam() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-md border border-slate-200">
-        <h1 className="text-3xl font-bold text-slate-800 mb-6 border-b pb-4">Nayi Answer Key Set Karein</h1>
+    <div className="min-h-screen py-10 px-4 bg-slate-50 flex justify-center">
+      <div className="w-full max-w-3xl premium-card p-8 relative z-10">
+        <h1 className="text-2xl font-bold text-slate-800 mb-6 border-b border-slate-200 pb-4">
+          Create Answer Key
+        </h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* Exam Details Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Exam Ka Naam (e.g., Math Half Yearly)</label>
+            <div className="group">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Exam Name</label>
               <input type="text" required value={examName} onChange={(e) => setExamName(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Exam Name..." />
+                className="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-400" placeholder="e.g., Math Half Yearly" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Class</label>
+            <div className="group">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Class</label>
               <input type="text" required value={className} onChange={(e) => setClassName(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="e.g., 10th A" />
+                className="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-400" placeholder="e.g., 10th A" />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Total Questions (Kitne sawal hain?)</label>
+          <div className="group">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Total Questions</label>
             <input type="number" min="1" max="100" value={totalQuestions} onChange={(e) => setTotalQuestions(Number(e.target.value))}
-              className="w-full md:w-1/3 border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500" />
+              className="w-full md:w-1/3 bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium text-slate-900" />
           </div>
 
           {/* Answer Key Grid */}
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4 bg-slate-100 p-2 rounded">Sahi Answers Chunein:</h3>
+          <div className="mt-8 bg-slate-50/50 p-6 rounded-xl border border-slate-200">
+            <h3 className="text-base font-bold text-slate-800 mb-4">
+              Select Correct Answers:
+            </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               
               {/* Loop lagakar questions generate karna */}
               {Array.from({ length: totalQuestions }, (_, i) => i + 1).map((qNum) => (
-                <div key={qNum} className="flex flex-col items-center p-3 border border-slate-200 rounded-lg bg-slate-50">
-                  <span className="text-sm font-bold text-slate-600 mb-2">Q {qNum}</span>
+                <div key={qNum} className="flex flex-col items-center p-3 bg-white border border-slate-200 rounded-lg hover:border-blue-300 transition-all">
+                  <span className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Question {qNum}</span>
                   <select 
                     value={answerKey[qNum] || ""} 
                     onChange={(e) => handleAnswerChange(qNum, e.target.value)}
-                    className="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none text-center font-medium"
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-md focus:border-blue-500 outline-none text-center font-semibold text-slate-800 cursor-pointer"
                   >
                     <option value="" disabled>-</option>
                     <option value="A">A</option>
@@ -115,10 +119,10 @@ export default function CreateExam() {
           </div>
 
           {/* Submit Button */}
-          <div className="pt-6 border-t mt-6 text-right">
-            <button type="button" onClick={() => router.push('/')} className="px-6 py-3 text-slate-600 font-medium mr-4 hover:bg-slate-100 rounded-lg">Cancel</button>
-            <button type="submit" disabled={isSubmitting} className="px-8 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 disabled:opacity-50">
-              {isSubmitting ? "Save ho raha hai..." : "Save Answer Key"}
+          <div className="pt-6 border-t border-slate-200 mt-6 flex justify-end items-center gap-4">
+            <button type="button" onClick={() => router.push('/')} className="px-6 py-2.5 text-slate-600 font-semibold hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+            <button type="submit" disabled={isSubmitting} className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50">
+              {isSubmitting ? "Saving..." : "Save Answer Key"}
             </button>
           </div>
 
