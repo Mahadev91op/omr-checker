@@ -128,9 +128,7 @@ export default function LiveScanner() {
           // For now, we simulate a successful grading based on the Answer Key length
           // since exact layout coordinates are needed for exact bubble detection.
           
-          setTimeout(() => {
-            simulateGrading(selectedExam);
-          }, 1000);
+          gradeWithAI(selectedExam);
           
           docContour.delete();
         } else {
@@ -147,37 +145,58 @@ export default function LiveScanner() {
     setIsProcessing(false);
   };
 
-  // Mock Grading logic for demonstration until exact template is calibrated
-  const simulateGrading = (exam) => {
+  // AI Grading logic using Gemini Vision API
+  const gradeWithAI = async (exam) => {
     setIsProcessing(true); // Stop auto-processing once triggered
-    const totalQuestions = exam.answerKey.length;
-    let score = 0;
-    const responses = exam.answerKey.map(k => {
-      // Simulate 80% accuracy randomly
-      const isCorrect = Math.random() > 0.2; 
-      if (isCorrect) score++;
-      return {
-        questionNumber: k.questionNumber,
-        correctOption: k.correctOption,
-        markedOption: isCorrect ? k.correctOption : "A",
-        isCorrect: isCorrect
-      };
-    });
+    setScanStatus("Analyzing with AI...");
+    
+    try {
+      // Ensure canvas has the latest frame
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (video && canvas) {
+        if (canvas.width === 0) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+        }
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      }
+      
+      const imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
-    setScanResult({
-      score,
-      totalQuestions,
-      percentage: ((score / totalQuestions) * 100).toFixed(1),
-      responses
-    });
+      const response = await fetch('/api/grade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64,
+          answerKey: exam.answerKey
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setScanResult(data.result);
+        setScanStatus("Grading Complete!");
+      } else {
+        alert("AI Grading failed: " + data.error);
+        setIsProcessing(false);
+        setScanStatus("Point at OMR sheet...");
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Network error during grading.");
+      setIsProcessing(false);
+      setScanStatus("Point at OMR sheet...");
+    }
   };
 
   const handleManualScan = () => {
     if (!selectedExam) return;
     setScanStatus("Manual Scan Triggered...");
-    setTimeout(() => {
-      simulateGrading(selectedExam);
-    }, 500);
+    gradeWithAI(selectedExam);
   };
 
   useEffect(() => {
