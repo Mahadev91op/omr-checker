@@ -52,7 +52,7 @@ Do not return any markdown formatting like \`\`\`json, just the raw JSON object.
       }
     });
 
-    const aiResponseText = response.text().trim();
+    const aiResponseText = response.text.trim();
     console.log("Raw AI Response:", aiResponseText);
     
     let aiAnswers;
