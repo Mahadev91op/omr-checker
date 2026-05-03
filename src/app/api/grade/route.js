@@ -47,20 +47,21 @@ Do not return any markdown formatting like \`\`\`json, just the raw JSON object.
         }
       ],
       config: {
-        temperature: 0.1 // Low temperature for consistent classification
+        temperature: 0.1, // Low temperature for consistent classification
+        responseMimeType: "application/json"
       }
     });
 
-    let aiResponseText = response.text().trim();
+    const aiResponseText = response.text().trim();
+    console.log("Raw AI Response:", aiResponseText);
     
-    // Fallback: If AI returned markdown code blocks, strip them
-    if (aiResponseText.startsWith('```json')) {
-      aiResponseText = aiResponseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    } else if (aiResponseText.startsWith('```')) {
-      aiResponseText = aiResponseText.replace(/```/g, '').trim();
+    let aiAnswers;
+    try {
+      aiAnswers = JSON.parse(aiResponseText);
+    } catch (parseError) {
+      console.error("JSON Parse Error on AI Response:", aiResponseText);
+      return NextResponse.json({ success: false, error: "AI returned invalid format. Please try again." }, { status: 500 });
     }
-
-    const aiAnswers = JSON.parse(aiResponseText);
 
     // Grading logic
     let score = 0;
@@ -95,6 +96,6 @@ Do not return any markdown formatting like \`\`\`json, just the raw JSON object.
 
   } catch (error) {
     console.error("AI Grading Error:", error);
-    return NextResponse.json({ success: false, error: "Failed to grade image using AI." }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message || error.toString() }, { status: 500 });
   }
 }
